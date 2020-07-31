@@ -1,5 +1,12 @@
 <template>
-  <div class="about">
-    <h1>This is an about page</h1>
-  </div>
+  <image-trace/>
 </template>
+<script>
+import imageTrace from "../components/imageTrace.vue"
+export default {
+  components:{imageTrace,}
+}
+</script>
+<style scoped>
+
+</style>

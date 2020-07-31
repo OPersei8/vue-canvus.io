@@ -1,7 +1,7 @@
 <template>
   <div class="hello">
     <!-- <img class="a logo uno dos tres name" src="../assets/logo.png"/> -->
-    <a class="container" href="https://netlify.com" target="_blank"> 
+    <a class="container" href="https://google.com" target="_blank"> 
     <div class="logo">
       <div class="uno"></div>
       <div class="dos"></div>
@@ -50,6 +50,7 @@ a {
   }
   .uno {
     left: 0;
+    
   }
   .dos {
     background: #e50815;
