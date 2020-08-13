@@ -11,17 +11,22 @@ export default {
     },
     data:function(){
         return{
-            cHeight:500,
-            cWidth:1000,
-            circleNumbers:500 ,
-            vueCanvas: null,
-            maxRadius:30,
-            defaultRadius:5,
-            detectRadius:50,
-            maxDetectRadius:300,
-            defaultDetectRadius:50,
+            vueCanvas: null,                //canvus element
 
-            mouseDown:false,
+            cHeight:500,                    //window height
+            cWidth:1000,                    //window width
+
+            circleNumbers:1000 ,            //how many circles
+            maxRadius:50,                   //max radius before burst
+            defaultRadius:5,                //default circle size
+            detectRadius:50,                //current area of mouse point
+            defaultDetectRadius:50,         //defaule area of mouse point
+            maxDetectRadius:175,            //max area of mouse point
+            burstRadius:80,                //how large when burst
+            circleRespawnCountdown:300,     //respawn time in frames
+            burstSpeed:2,                   //how quick circles burst
+
+            mouseDown:false,                //clicking
 
 
             circles:[],
@@ -40,9 +45,9 @@ export default {
             // dColorB:-1,
 
             // radius:30,
-            // colorHexR:0,
-            // colorHexG:0,
-            // colorHexB:0,
+            // colorR:0,
+            // colorG:0,
+            // colorB:0,
         }
     },
     mounted(){
@@ -77,9 +82,12 @@ export default {
                 x:0,
                 y:0,
                 radius:this.defaultRadius,//+Math.floor(Math.random() * 30),
-                colorHexR:0,
-                colorHexG:0,
-                colorHexB:0,
+                colorR:0,
+                colorG:0,
+                colorB:0,
+                colorA:1,
+                respawnCountdown:this.circleRespawnCountdown,
+                alive:true
             }
 
             circle.x = Math.random() * (window.innerWidth - circle.radius * 2) + circle.radius;
@@ -92,31 +100,31 @@ export default {
 
             // console.log(hsv);
 
-            circle.colorHexR = hsv.b
-            circle.colorHexG = hsv.g
-            circle.colorHexB = hsv.r
+            circle.colorR = hsv.b
+            circle.colorG = hsv.g
+            circle.colorB = hsv.r
 
             this.circles.push(circle);
 
 
             // var index = Math.floor(Math.random() * 3);
             // // console.log(index);
-            // var color = 100+ Math.floor((Math.random() * 150));
+            // var color = 100 + Math.floor((Math.random() * 150));
             // console.log(color);
 
             // switch(index)
             // {
             //     case 0:
-            //         circle.colorHexR = color;
-            //         // circle.colorHexG = color;
+            //         circle.colorR = color;
+            //         // circle.colorG = color;
             //         break;
             //     case 1:
-            //         circle.colorHexG = color;
-            //         // circle.colorHexB = color;
+            //         circle.colorG = color;
+            //         // circle.colorB = color;
             //         break;
             //     case 2:
-            //         // circle.colorHexR = color;
-            //         circle.colorHexB = color;
+            //         // circle.colorR = color;
+            //         circle.colorB = color;
             //         break;
             //     default:
             //         break;
@@ -157,66 +165,110 @@ export default {
         },
         drawArc:function(circle){
             this.vueCanvas.beginPath();
-            this.vueCanvas.arc(circle.x,circle.y,circle.radius,0,Math.PI *2,false);
+            if(circle.radius > 0)
+                this.vueCanvas.arc(circle.x,circle.y,circle.radius,0,Math.PI *2,false);
             // this.vueCanvas.strokeStyle = `rgb(
-            //     ${this.colorHexB},
-            //     ${this.colorHexR},
-            //     ${this.colorHexG})`;
+            //     ${this.colorB},
+            //     ${this.colorR},
+            //     ${this.colorG})`;
             // this.vueCanvas.lineWidth = 2;
             // this.vueCanvas.stroke();
             this.vueCanvas.fillStyle = `rgb(
-                ${circle.colorHexR},
-                ${circle.colorHexG},
-                ${circle.colorHexB})`;
+                ${circle.colorR},
+                ${circle.colorG},
+                ${circle.colorB},
+                ${circle.colorA})`;
             this.vueCanvas.fill();
         },
 
         update:function(circle,delta){
-            // if(circle.colorHexR == 0 ||circle.colorHexR == 255)
+            // if(circle.colorR == 0 ||circle.colorR == 255)
             //     delta.dColorR = -delta.dColorR;
-            // if(circle.colorHexG == 0 ||circle.colorHexG == 255)
+            // if(circle.colorG == 0 ||circle.colorG == 255)
             //     delta.dColorG = -delta.dColorG;
-            // if(circle.colorHexB == 0 ||circle.colorHexB == 255)
+            // if(circle.colorB == 0 ||circle.colorB == 255)
             //     delta.dColorB = -delta.dColorB;    
 
-            // circle.colorHexR += delta.dColorR;
-            // circle.colorHexG += delta.dColorG;
-            // circle.colorHexB += delta.dColorB;
-            
-            if(circle.x + circle.radius > this.cWidth || circle.x - circle.radius < 0)
+            // circle.colorR += delta.dColorR;
+            // circle.colorG += delta.dColorG;
+            // circle.colorB += delta.dColorB;
+
+            if(!circle.alive)
             {
-                delta.dx = -delta.dx;
-            }
-
-            if(circle.y + circle.radius > this.cHeight || circle.y - circle.radius < 0)
-            {
-                delta.dy = -delta.dy;
-            }
-
-            circle.x+=delta.dx;
-            circle.y+=delta.dy;
-
-            if(this.mouse.x - circle.x < this.detectRadius && this.mouse.x - circle.x > -this.detectRadius && this.mouse.y - circle.y < this.detectRadius && this.mouse.y - circle.y > -this.detectRadius){
-                circle.x-=delta.dx*0.7;
-                circle.y-=delta.dy*0.7;
-                if(circle.radius <= this.maxRadius)
-                { 
-                    circle.radius += 3;
+                circle.radius-=10;
+                circle.colorA -= 0.001;
+                
+                if(circle.colorA < 0)
+                    circle.colorA = 0;
+                if(circle.radius < 0)
+                    circle.radius = 0;
+                circle.respawnCountdown--;
+                if(circle.respawnCountdown <= 0)
+                {
+                    var nC = this.resetCircle(circle);
+                    circle.x = nC.x;
+                    circle.y = nC.y;
+                    circle.alive = nC.alive;
+                    circle.radius = nC.radius;
+                    circle.respawnCountdown = nC.respawnCountdown;
+                    circle.colorR = nC.colorR;
+                    circle.colorG = nC.colorG;
+                    circle.colorB = nC.colorB;
+                    circle.colorA = nC.colorA;
                 }
             }
             else{
-                if(circle.radius > this.defaultRadius)
-                circle.radius -= 1;
+                if(circle.x + circle.radius > this.cWidth || circle.x - circle.radius < 0)
+                {
+                    delta.dx = -delta.dx;
+                }
+    
+                if(circle.y + circle.radius > this.cHeight || circle.y - circle.radius < 0)
+                {
+                    delta.dy = -delta.dy;
+                }
+    
+                circle.x+=delta.dx;
+                circle.y+=delta.dy;
+    
+                if(this.mouse.x - circle.x < this.detectRadius && this.mouse.x - circle.x > -this.detectRadius && this.mouse.y - circle.y < this.detectRadius && this.mouse.y - circle.y > -this.detectRadius)
+                {
+                    circle.x-=delta.dx*0.8;
+                    circle.y-=delta.dy*0.8;
+                    if(circle.radius < this.maxRadius)
+                    { 
+                        circle.radius += this.burstSpeed;
+                        if(circle.colorR <= 255)
+                            circle.colorR++;
+                        if(circle.colorG <= 255)
+                            circle.colorG++;
+                        if(circle.colorB <= 255)
+                            circle.colorB++;
+                            
+                    }
+                    else if(circle.radius >= this.maxRadius)
+                    {
+                        circle.radius = this.burstRadius;
+                        circle.colorA /= 2;
+                        circle.alive = false;
+                    }
+    
+                }
+                else{
+                    if(circle.radius > this.defaultRadius)
+                    circle.radius -= 0.5;
+                }
+    
+                if(this.mouseDown){
+                    if(this.detectRadius <= this.maxDetectRadius)
+                        this.detectRadius += 0.005;
+                }
+                else{
+                    if(this.detectRadius >= this.defaultDetectRadius)
+                        this.detectRadius -= 0.005;
+                }
             }
-
-            if(this.mouseDown){
-                if(this.detectRadius <= this.maxDetectRadius)
-                    this.detectRadius += 0.005;
-            }
-            else{
-                if(this.detectRadius >= this.defaultDetectRadius)
-                    this.detectRadius -= 0.005;
-            }
+            
         },
 
         animate:function(){
@@ -227,11 +279,41 @@ export default {
             {
                 this.drawArc(this.circles[index]);
                 this.update(this.circles[index],this.deltas[index]);
+                // console.log("index:" + index + " is alive?" + this.circles[index].alive)
             }
             // this.update();
 
         
 
+        },
+        resetCircle:function(){
+            var newCircle = {
+                x:0,
+                y:0,
+                radius:this.defaultRadius,//+Math.floor(Math.random() * 30),
+                colorR:0,
+                colorG:0,
+                colorB:0,
+                colorA:1,
+                respawnCountdown:this.circleRespawnCountdown,
+                alive:true
+            }
+
+            newCircle.x = Math.random() * (window.innerWidth - newCircle.radius * 2) + newCircle.radius;
+            newCircle.y = Math.random() * (window.innerHeight - newCircle.radius * 2) + newCircle.radius;
+
+            var h = 217;
+            var s = Math.random();
+            var v = 1.00;
+            var hsv = this.HSVtoRGB(h,s,v);
+
+            // console.log(hsv);
+
+            newCircle.colorR = hsv.b
+            newCircle.colorG = hsv.g
+            newCircle.colorB = hsv.r
+
+            return newCircle;
         },
         HSVtoRGB:function(h, s, v) {
             var r, g, b, i, f, p, q, t;
