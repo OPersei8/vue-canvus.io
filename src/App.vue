@@ -1,42 +1,20 @@
 <template>
-  <div id="app">
-    <!-- <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-    </div> -->
     <router-view/>
-  </div>
 </template>
 
 <style lang="scss">
 body {
+  animation: fadein 1s linear;
   margin: 0;
-  padding: 0;
-  background: black;
-  color: white;
-  font-family: "Arial", sans-serif;
-  font-size: 45px;
-  font-weight: bold;
+  // color: white;
+  // font-family: "Arial", sans-serif;
+  // font-size: 45px;
+  // font-weight: bold;
 }
 
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
-
-#nav {
-  padding: 30px;
-
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-
-    &.router-link-exact-active {
-      color: #42b983;
-    }
+@keyframes fadein {
+  0%{
+    background-color: rgb(128, 128, 128);
   }
 }
 </style>
