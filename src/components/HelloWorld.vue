@@ -16,15 +16,15 @@ export default {
             cHeight:500,                    //window height
             cWidth:1000,                    //window width
 
-            circleNumbers:1000 ,            //how many circles
+            circleNumbers:800 ,            //how many circles
             maxRadius:50,                   //max radius before burst
-            defaultRadius:5,                //default circle size
+            defaultRadius:4,                //default circle size
             detectRadius:50,                //current area of mouse point
             defaultDetectRadius:50,         //defaule area of mouse point
             maxDetectRadius:175,            //max area of mouse point
             burstRadius:80,                //how large when burst
             circleRespawnCountdown:300,     //respawn time in frames
-            burstSpeed:2,                   //how quick circles burst
+            burstSpeed:5,                   //how quick circles burst
 
             mouseDown:false,                //clicking
 
@@ -93,16 +93,16 @@ export default {
             circle.x = Math.random() * (window.innerWidth - circle.radius * 2) + circle.radius;
             circle.y = Math.random() * (window.innerHeight - circle.radius * 2) + circle.radius;
 
-            var h = 217;
+            var h = 217/360;
             var s = Math.random();
             var v = 1.00;
             var hsv = this.HSVtoRGB(h,s,v);
 
-            // console.log(hsv);
+            // console.log(h,s,v);
 
-            circle.colorR = hsv.b
+            circle.colorR = hsv.r
             circle.colorG = hsv.g
-            circle.colorB = hsv.r
+            circle.colorB = hsv.b
 
             this.circles.push(circle);
 
@@ -196,7 +196,7 @@ export default {
             if(!circle.alive)
             {
                 circle.radius-=10;
-                circle.colorA -= 0.001;
+                circle.colorA -= 0.1;
                 
                 if(circle.colorA < 0)
                     circle.colorA = 0;
@@ -237,7 +237,10 @@ export default {
                     circle.y-=delta.dy*0.8;
                     if(circle.radius < this.maxRadius)
                     { 
-                        circle.radius += this.burstSpeed;
+                        var fakeDistance = Math.max(Math.abs(this.mouse.x - circle.x) , Math.abs(this.mouse.y - circle.y));
+                        var burstSpeedModifier = Math.min(((this.detectRadius- fakeDistance) / (this.detectRadius * 2))*2 ,1);
+                        // console.log(burstSpeedModifier);
+                        circle.radius += this.burstSpeed * burstSpeedModifier;// - (this.maxRadius - circle.radius) * 0.8;
                         if(circle.colorR <= 255)
                             circle.colorR++;
                         if(circle.colorG <= 255)
@@ -249,7 +252,9 @@ export default {
                     else if(circle.radius >= this.maxRadius)
                     {
                         circle.radius = this.burstRadius;
-                        circle.colorA /= 2;
+                        circle.colorR = 255;
+                        circle.colorG = 255;
+                        circle.colorB = 255;
                         circle.alive = false;
                     }
     
@@ -302,16 +307,16 @@ export default {
             newCircle.x = Math.random() * (window.innerWidth - newCircle.radius * 2) + newCircle.radius;
             newCircle.y = Math.random() * (window.innerHeight - newCircle.radius * 2) + newCircle.radius;
 
-            var h = 217;
+            var h = 217/360;
             var s = Math.random();
             var v = 1.00;
             var hsv = this.HSVtoRGB(h,s,v);
 
             // console.log(hsv);
 
-            newCircle.colorR = hsv.b
+            newCircle.colorR = hsv.r
             newCircle.colorG = hsv.g
-            newCircle.colorB = hsv.r
+            newCircle.colorB = hsv.b
 
             return newCircle;
         },
