@@ -4,6 +4,9 @@
 </template>
 
 <script>
+
+var powerUpTypes = ["biggerAera","fasterBurst"];
+
 export default {
     props:{
         height:Number,
@@ -26,9 +29,16 @@ export default {
             circleRespawnCountdown:300,     //respawn time in frames
             burstSpeed:5,                   //how quick circles burst
 
+            powerUPCoolDown:20*60,
+            powerUPlastingTimg:10*60,            
+
+
             mouseDown:false,                //clicking
 
+            burstCount:0,
+            powerUpCounts:1,
 
+            powerUps:[],
             circles:[],
             deltas:[],
 
@@ -105,35 +115,9 @@ export default {
             circle.colorB = hsv.b
 
             this.circles.push(circle);
-
-
-            // var index = Math.floor(Math.random() * 3);
-            // // console.log(index);
-            // var color = 100 + Math.floor((Math.random() * 150));
-            // console.log(color);
-
-            // switch(index)
-            // {
-            //     case 0:
-            //         circle.colorR = color;
-            //         // circle.colorG = color;
-            //         break;
-            //     case 1:
-            //         circle.colorG = color;
-            //         // circle.colorB = color;
-            //         break;
-            //     case 2:
-            //         // circle.colorR = color;
-            //         circle.colorB = color;
-            //         break;
-            //     default:
-            //         break;
-            // }
             
 
             var delta = {
-                // dx:10,
-                // dy:10,
                 dx:Math.random()-0.5,//Math.floor(((Math.random()-0.5)*2)*3),
                 dy:Math.random()-0.5,//Math.floor(((Math.random()-0.5)*2)*3),
                 dColorR:-1,
@@ -142,6 +126,20 @@ export default {
             }
             this.deltas.push(delta);
         }
+        
+        for(var pow = 0 ; pow < this.powerUpCounts; pow++)
+        {
+            var powerUP = {
+                x:0,
+                y:0,
+                type:Math.floor(Math.random()*powerUpTypes.length),
+                coolDown:this.powerUPCoolDown,
+                lastingTime:this.powerUPlastingTimg,
+            }
+            
+            this.powerUps.push(powerUP);
+        }
+
          this.animate()
     },
     methods:{
@@ -251,6 +249,7 @@ export default {
                     }
                     else if(circle.radius >= this.maxRadius)
                     {
+                        this.burstCount++;
                         circle.radius = this.burstRadius;
                         circle.colorR = 255;
                         circle.colorG = 255;
@@ -276,7 +275,17 @@ export default {
             
         },
 
+        darwPOW:function(pow){
+            console.log(pow);
+        },
+
+        updatePOW:function(pow){
+            pow;
+        },
+
+
         animate:function(){
+            
             
             requestAnimationFrame(this.animate);
             this.clear();
@@ -285,12 +294,23 @@ export default {
                 this.drawArc(this.circles[index]);
                 this.update(this.circles[index],this.deltas[index]);
                 // console.log("index:" + index + " is alive?" + this.circles[index].alive)
+                this.vueCanvas.fillStyle = "white";
+                this.vueCanvas.font = "30px Arial";
+                this.vueCanvas.fillText(this.burstCount,10,50);
+            }
+            for(var pow in this.powerUps)
+            {
+                this.darwPOW(this.powerUps[pow]);
+                this.updatePOW(this.powerUps[pow]);
             }
             // this.update();
 
         
 
         },
+
+
+
         resetCircle:function(){
             var newCircle = {
                 x:0,
