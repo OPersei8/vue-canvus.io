@@ -5,7 +5,6 @@
 
 <script>
 
-var powerUpTypes = ["biggerAera","fasterBurst"];
 
 export default {
     props:{
@@ -24,10 +23,11 @@ export default {
             defaultRadius:4,                //default circle size
             detectRadius:50,                //current area of mouse point
             defaultDetectRadius:50,         //defaule area of mouse point
-            maxDetectRadius:175,            //max area of mouse point
-            burstRadius:80,                //how large when burst
+            maxDetectRadius:200,            //max area of mouse point
+            burstRadius:120,                //how large when burst
             circleRespawnCountdown:300,     //respawn time in frames
-            burstSpeed:5,                   //how quick circles burst
+            powRespawnCountdown:0,
+            burstSpeed:8,                   //how quick circles burst
 
             powerUPCoolDown:20*60,
             powerUPlastingTimg:10*60,            
@@ -38,6 +38,7 @@ export default {
             burstCount:0,
             powerUpCounts:1,
 
+            powerUpTypes:["biggerAera","fasterBurst"],
             powerUps:[],
             circles:[],
             deltas:[],
@@ -132,11 +133,19 @@ export default {
             var powerUP = {
                 x:0,
                 y:0,
-                type:Math.floor(Math.random()*powerUpTypes.length),
-                coolDown:this.powerUPCoolDown,
-                lastingTime:this.powerUPlastingTimg,
+                radius:this.defaultRadius*10,//+Math.floor(Math.random() * 30),
+                colorR:255,
+                colorG:0,
+                colorB:0,
+                colorA:1,
+                respawnCountdown:this.powRespawnCountdown,
+                alive:false,
+                powerUpTypes:this.powerUpTypes[0],
             }
-            
+            powerUP.x = Math.random() * (window.innerWidth - powerUP.radius * 2) + powerUP.radius;
+            powerUP.y = Math.random() * (window.innerHeight - powerUP.radius * 2) + powerUP.radius;
+
+
             this.powerUps.push(powerUP);
         }
 
@@ -260,7 +269,7 @@ export default {
                 }
                 else{
                     if(circle.radius > this.defaultRadius)
-                    circle.radius -= 0.5;
+                        circle.radius -= 0.5;
                 }
     
                 if(this.mouseDown){
@@ -275,12 +284,13 @@ export default {
             
         },
 
-        darwPOW:function(pow){
-            console.log(pow);
-        },
-
-        updatePOW:function(pow){
-            pow;
+        updatePOW:function(pow){            
+            if(pow.respawnCountdown <= 0)
+            {
+                pow.alive =true;
+                pow.respawnCountdown = this.powerUPCoolDown;
+            }
+            pow.respawnCountdown--;
         },
 
 
@@ -289,20 +299,20 @@ export default {
             
             requestAnimationFrame(this.animate);
             this.clear();
-            for(var index in this.circles)
+            for(let index in this.circles)
             {
                 this.drawArc(this.circles[index]);
                 this.update(this.circles[index],this.deltas[index]);
                 // console.log("index:" + index + " is alive?" + this.circles[index].alive)
+            }
+            for(let pow in this.powerUps)
+            {
+                this.drawArc(this.powerUps[pow]);
+                this.updatePOW(this.powerUps[pow]);
+            }
                 this.vueCanvas.fillStyle = "white";
                 this.vueCanvas.font = "30px Arial";
                 this.vueCanvas.fillText(this.burstCount,10,50);
-            }
-            for(var pow in this.powerUps)
-            {
-                this.darwPOW(this.powerUps[pow]);
-                this.updatePOW(this.powerUps[pow]);
-            }
             // this.update();
 
         
@@ -343,7 +353,7 @@ export default {
         HSVtoRGB:function(h, s, v) {
             var r, g, b, i, f, p, q, t;
             if (arguments.length === 1) {
-                s = h.s, v = h.v, h = h.h;
+                s = h.s; v = h.v; h = h.h;
             }
             i = Math.floor(h * 6);
             f = h * 6 - i;
@@ -351,12 +361,12 @@ export default {
             q = v * (1 - f * s);
             t = v * (1 - (1 - f) * s);
             switch (i % 6) {
-                case 0: r = v, g = t, b = p; break;
-                case 1: r = q, g = v, b = p; break;
-                case 2: r = p, g = v, b = t; break;
-                case 3: r = p, g = q, b = v; break;
-                case 4: r = t, g = p, b = v; break;
-                case 5: r = v, g = p, b = q; break;
+                case 0: r = v; g = t; b = p; break;
+                case 1: r = q; g = v; b = p; break;
+                case 2: r = p; g = v; b = t; break;
+                case 3: r = p; g = q; b = v; break;
+                case 4: r = t; g = p; b = v; break;
+                case 5: r = v; g = p; b = q; break;
             }
             return {
                 r: Math.round(r * 255),
